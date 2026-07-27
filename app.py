@@ -51,7 +51,22 @@ with st.sidebar:
     if preset_key:
         st.caption("Key loaded from local configuration.")
     model = st.selectbox("Model", ["gpt-4o", "gpt-4o-mini", "gpt-4.1"], index=0)
-    reviewer = st.text_input("Reviewing physician", value="Dr. ")
+    REVIEWERS = [
+        "Dr. Mohamed Samy",
+        "Dr. Ahmad Abdelhady",
+        "Dr. Dina Elsamman",
+        "Dr. Moustafa Badr",
+        "Dr. Nefertiti El-Nikhely",
+        "Dr. Shariffa Garwan",
+    ]
+    reviewer_choice = st.selectbox(
+        "Reviewing physician", REVIEWERS + ["Other…"],
+        help="Select the reviewing physician. Choose 'Other…' to enter a name.",
+    )
+    if reviewer_choice == "Other…":
+        reviewer = st.text_input("Enter reviewer name", value="Dr. ")
+    else:
+        reviewer = reviewer_choice
 
     st.divider()
     cases = core.list_cases()
@@ -368,12 +383,50 @@ else:
 approve_col, reject_col = st.columns(2)
 
 
+def _fire_n8n_webhook(payload):
+    """
+    Send the review decision to the n8n workflow via its webhook, so the
+    decision is recorded in the persistent cloud audit table.
+
+    The URL is read from secrets/environment so it is not hard-coded in the
+    public repository. Failure never blocks sign-off — the local audit write
+    has already happened; this is an additional, best-effort push.
+    Returns (ok: bool, message: str) for display.
+    """
+    import urllib.request
+    import urllib.error
+
+    url = ""
+    try:
+        url = st.secrets.get("N8N_WEBHOOK_URL", "")
+    except Exception:  # noqa: BLE001
+        url = ""
+    url = url or os.environ.get("N8N_WEBHOOK_URL", "")
+    if not url:
+        return False, "No n8n webhook configured (N8N_WEBHOOK_URL not set)."
+
+    try:
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url, data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            resp.read()
+        return True, "Sent to n8n audit workflow."
+    except urllib.error.HTTPError as exc:
+        return False, f"n8n returned HTTP {exc.code}."
+    except Exception as exc:  # noqa: BLE001
+        return False, f"Could not reach n8n webhook: {exc}"
+
+
 def _log(decision):
     review_seconds = (
         round(time.time() - st.session_state.gen_time)
         if st.session_state.gen_time else ""
     )
-    written, note = core.append_audit({
+    audit_row = {
         "timestamp": core.now_iso(),
         "case_id": output.get("case_id", meta.get("case_id")),
         "case_type": meta.get("case_type"),
@@ -397,10 +450,16 @@ def _log(decision):
         "flags_acknowledged": "yes" if check["total_flags"] and acknowledged else (
             "n/a" if not check["total_flags"] else "no"),
         "reviewer_comment": comment,
-    })
+    }
+    written, note = core.append_audit(audit_row)
     st.session_state.saved = decision
     st.session_state.audit_path = written
     st.session_state.audit_note = note
+
+    # Best-effort push to the n8n persistent audit workflow
+    ok, msg = _fire_n8n_webhook(audit_row)
+    st.session_state.n8n_ok = ok
+    st.session_state.n8n_msg = msg
 
 
 with approve_col:
@@ -431,6 +490,14 @@ if st.session_state.saved:
         st.error(f"Decision **{st.session_state.saved}** was NOT saved.")
     if audit_note:
         st.warning(audit_note)
+
+    # Show the result of the n8n webhook push (persistent cloud audit)
+    n8n_ok = st.session_state.get("n8n_ok")
+    n8n_msg = st.session_state.get("n8n_msg", "")
+    if n8n_ok:
+        st.info(f"📤 {n8n_msg} The decision is now in the persistent audit table.")
+    elif n8n_msg:
+        st.caption(f"n8n audit push: {n8n_msg}")
     dl1, dl2 = st.columns(2)
     with dl1:
         st.download_button(
