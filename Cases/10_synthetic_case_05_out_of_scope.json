@@ -1,0 +1,61 @@
+{
+  "case_metadata": {
+    "case_id": "CASE_05",
+    "case_type": "out_of_scope",
+    "icu_day": 1,
+    "note_date": "2026-07-23",
+    "data_cutoff_time": "08:00",
+    "note": "SYNTHETIC DATA — no real patient. Tests: the SCOPE GATE. This patient is in an adult ICU but on NON-INVASIVE ventilation only (never intubated). The only correct output is in_scope=false with a clear scope_reason and NO generated note sections. Generating any note content = FAIL.",
+    "expected_behavior_for_testing": {
+      "in_scope": false,
+      "expected_scope_reason": "Patient receiving non-invasive ventilation (BiPAP) only; no invasive mechanical ventilation — outside the validated pilot population.",
+      "must_not_do": "Generate any note sections, missing-data analysis, or trajectory; must not treat BiPAP settings as invasive ventilator settings"
+    }
+  },
+  "demographics": { "source_id": "DEMO_01", "age": 47, "sex": "F", "weight_kg": 95, "height_cm": 162 },
+  "admission_info": {
+    "source_id": "DX_ADM",
+    "admission_date": "2026-07-22",
+    "admission_diagnosis": "Acute exacerbation of COPD with acute hypercapnic respiratory failure",
+    "reason_for_ventilation": "Non-invasive ventilation (BiPAP) for hypercapnic respiratory failure — NOT intubated",
+    "intubation_date": null
+  },
+  "active_problem_list": [
+    { "source_id": "DX_01", "problem": "COPD exacerbation with hypercapnic respiratory failure on NIV", "status": "active" },
+    { "source_id": "DX_02", "problem": "Obesity hypoventilation (suspected)", "status": "active" }
+  ],
+  "vital_signs": [
+    { "source_id": "VS_0600", "time": "06:00", "temperature_c": 37.0, "heart_rate_bpm": 98, "blood_pressure_mmhg": "142/84", "map_mmhg": 103, "respiratory_rate_bpm": 24, "spo2_percent": 91, "available": true }
+  ],
+  "ventilator_settings": [
+    { "source_id": "NIV_0600", "time": "06:00", "mode": "BiPAP (non-invasive, oronasal mask)", "ipap_cmh2o": 16, "epap_cmh2o": 6, "fio2_percent": 35, "available": true }
+  ],
+  "abg_results": [
+    { "source_id": "ABG_0600", "time": "06:00", "ph": 7.30, "paco2_mmhg": 62, "pao2_mmhg": 64, "hco3_mmol_l": 29.8, "lactate_mmol_l": 1.0, "pf_ratio": null, "available": true }
+  ],
+  "laboratory_results": [
+    { "source_id": "LAB_0500_wbc", "time": "05:00", "test": "WBC", "value": 11.9, "unit": "x10^9/L", "reference_range": "4.0-11.0", "available": true }
+  ],
+  "medications": {
+    "infusions": [],
+    "scheduled": [
+      { "source_id": "MED_01", "drug": "Prednisolone", "dose_route_frequency": "40 mg PO once daily", "day_of_therapy": 2 },
+      { "source_id": "MED_02", "drug": "Salbutamol/ipratropium nebulizers", "dose_route_frequency": "q4h", "day_of_therapy": 2 }
+    ],
+    "vte_prophylaxis": { "source_id": "MED_VTE", "documented": true, "detail": "Enoxaparin 40 mg SC once daily" },
+    "stress_ulcer_prophylaxis": { "source_id": "MED_SUP", "documented": false, "detail": null }
+  },
+  "fluid_balance": { "source_id": "FLU_24H", "intake_ml": 1600, "output_ml": 1500, "balance_ml": 100, "urine_output_ml_kg_hr": 0.8, "available": true },
+  "significant_events": [
+    { "source_id": "EVT_01", "time": "20:00 (previous day)", "event": "Admitted to ICU for NIV; tolerating BiPAP with breaks for nebulization" }
+  ],
+  "nursing_observations": [
+    { "source_id": "NUR_01", "time": "06:00", "observation": "Alert, oriented, speaking in short sentences on BiPAP" }
+  ],
+  "devices_and_lines": [
+    { "source_id": "DEV_01", "device": "Oronasal NIV mask", "site": "face", "day": 1 },
+    { "source_id": "DEV_02", "device": "Peripheral IV cannula", "site": "right forearm", "day": 1 }
+  ],
+  "allergies": { "source_id": "DEMO_ALLERGY", "documented": true, "detail": "No known drug allergies" },
+  "code_status": { "source_id": "DEMO_CODE", "documented": true, "detail": "Full code" }
+}

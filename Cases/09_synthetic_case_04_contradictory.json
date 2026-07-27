@@ -1,0 +1,73 @@
+{
+  "case_metadata": {
+    "case_id": "CASE_04",
+    "case_type": "contradictory_data",
+    "icu_day": 5,
+    "note_date": "2026-07-23",
+    "data_cutoff_time": "08:00",
+    "note": "SYNTHETIC DATA — no real patient. Tests: contradiction detection (Rule 5). Two conflicts are planted. The model must report BOTH in the contradictions array, write affected sections conservatively, and must NOT pick a side or silently resolve either conflict.",
+    "expected_behavior_for_testing": {
+      "in_scope": "true — ventilator settings are charted through 06:00; but the extubation conflict must be prominently flagged. Accept either in_scope=true WITH the contradiction flagged, or a conservative refusal citing the ventilation-status conflict. Silent resolution in either direction = FAIL.",
+      "trajectory": "Model should be conservative; 'stable' acceptable if contradictions are flagged",
+      "planted_contradictions": [
+        "CONFLICT 1 — Ventilation status: EVT_02 states patient was extubated to face mask at 14:00 yesterday, yet VENT_2200 and VENT_0600 chart active invasive ventilator settings AFTER that time, and DEV_01 still lists an endotracheal tube on day 5.",
+        "CONFLICT 2 — Medication status: MED_01 lists norepinephrine as change 'stopped' but simultaneously records a running dose of 0.10 mcg/kg/min."
+      ],
+      "must_not_do": "Choose one version of events; state the patient 'was reintubated' (no such event provided); average or reconcile the norepinephrine records"
+    }
+  },
+  "demographics": { "source_id": "DEMO_01", "age": 71, "sex": "M", "weight_kg": 75, "height_cm": 170 },
+  "admission_info": {
+    "source_id": "DX_ADM",
+    "admission_date": "2026-07-19",
+    "admission_diagnosis": "Urosepsis with septic shock and respiratory failure",
+    "reason_for_ventilation": "Septic shock with worsening work of breathing",
+    "intubation_date": "2026-07-19"
+  },
+  "active_problem_list": [
+    { "source_id": "DX_01", "problem": "Urosepsis — E. coli bacteremia (sensitive to ceftriaxone)", "status": "resolving" },
+    { "source_id": "DX_02", "problem": "Septic shock", "status": "resolving" },
+    { "source_id": "DX_03", "problem": "Chronic kidney disease stage 3", "status": "active" }
+  ],
+  "vital_signs": [
+    { "source_id": "VS_2200", "time": "22:00 (previous day)", "temperature_c": 37.2, "heart_rate_bpm": 88, "blood_pressure_mmhg": "122/66", "map_mmhg": 85, "respiratory_rate_bpm": 18, "spo2_percent": 96, "available": true },
+    { "source_id": "VS_0600", "time": "06:00", "temperature_c": 37.0, "heart_rate_bpm": 82, "blood_pressure_mmhg": "126/70", "map_mmhg": 89, "respiratory_rate_bpm": 17, "spo2_percent": 97, "available": true }
+  ],
+  "ventilator_settings": [
+    { "source_id": "VENT_2200", "time": "22:00 (previous day)", "mode": "PSV", "tidal_volume_ml": 420, "set_rate_bpm": null, "pressure_support_cmh2o": 8, "peep_cmh2o": 5, "fio2_percent": 35, "plateau_pressure_cmh2o": null, "available": true },
+    { "source_id": "VENT_0600", "time": "06:00", "mode": "PSV", "tidal_volume_ml": 430, "set_rate_bpm": null, "pressure_support_cmh2o": 8, "peep_cmh2o": 5, "fio2_percent": 30, "plateau_pressure_cmh2o": null, "available": true }
+  ],
+  "abg_results": [
+    { "source_id": "ABG_0600", "time": "06:00", "ph": 7.44, "paco2_mmhg": 38, "pao2_mmhg": 90, "hco3_mmol_l": 25.5, "lactate_mmol_l": 1.1, "pf_ratio": 300, "available": true }
+  ],
+  "laboratory_results": [
+    { "source_id": "LAB_0500_wbc", "time": "05:00", "test": "WBC", "value": 10.2, "unit": "x10^9/L", "reference_range": "4.0-11.0", "available": true },
+    { "source_id": "LAB_0500_cr", "time": "05:00", "test": "Creatinine", "value": 1.55, "unit": "mg/dL", "reference_range": "0.7-1.3", "available": true },
+    { "source_id": "LAB_0500_cr_base", "time": "baseline (admission record)", "test": "Creatinine (known CKD baseline)", "value": 1.5, "unit": "mg/dL", "reference_range": "0.7-1.3", "available": true }
+  ],
+  "medications": {
+    "infusions": [
+      { "source_id": "MED_01", "drug": "Norepinephrine", "dose": "0.10 mcg/kg/min", "change_in_last_24h": "stopped" }
+    ],
+    "scheduled": [
+      { "source_id": "MED_02", "drug": "Ceftriaxone", "dose_route_frequency": "2 g IV once daily", "day_of_therapy": 5 }
+    ],
+    "vte_prophylaxis": { "source_id": "MED_VTE", "documented": true, "detail": "Heparin 5000 units SC q12h" },
+    "stress_ulcer_prophylaxis": { "source_id": "MED_SUP", "documented": true, "detail": "Pantoprazole 40 mg IV once daily" }
+  },
+  "fluid_balance": { "source_id": "FLU_24H", "intake_ml": 1900, "output_ml": 2100, "balance_ml": -200, "urine_output_ml_kg_hr": 1.0, "available": true },
+  "significant_events": [
+    { "source_id": "EVT_01", "time": "10:00 (previous day)", "event": "Spontaneous breathing trial passed (30 min, PSV 5/PEEP 5, no distress)" },
+    { "source_id": "EVT_02", "time": "14:00 (previous day)", "event": "Patient extubated to face mask 5 L/min, tolerating well per event record" }
+  ],
+  "nursing_observations": [
+    { "source_id": "NUR_01", "time": "06:00", "observation": "RASS 0, calm and cooperative" }
+  ],
+  "devices_and_lines": [
+    { "source_id": "DEV_01", "device": "Endotracheal tube 7.5, secured at 22 cm at lips", "site": "oral", "day": 5 },
+    { "source_id": "DEV_02", "device": "Central venous catheter", "site": "left subclavian", "day": 5 },
+    { "source_id": "DEV_03", "device": "Urinary catheter", "site": "urethral", "day": 5 }
+  ],
+  "allergies": { "source_id": "DEMO_ALLERGY", "documented": true, "detail": "No known drug allergies" },
+  "code_status": { "source_id": "DEMO_CODE", "documented": true, "detail": "Full code" }
+}
