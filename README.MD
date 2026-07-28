@@ -5,7 +5,7 @@
 A Streamlit prototype that drafts a daily ICU progress note for mechanically
 ventilated adult patients from structured case data, with a physician
 review-and-sign-off workflow built in.
-
+ 
 **This is a research/capstone prototype, not a validated clinical tool.**
 It is tested only on synthetic cases, produces drafts that always require
 physician review and sign-off, and is out of scope for any patient who is not
